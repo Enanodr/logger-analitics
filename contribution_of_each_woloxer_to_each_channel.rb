@@ -30,8 +30,8 @@ CSV.foreach('slacks_by_channel_by_woloxer_email.csv', headers: true, header_conv
 end
 
 # CSV Headers
-csv_array_daily = [ %w(channel_id, woloxer_email, day, contribiution) ]
-csv_array_monthly = [ %w(channel_id, woloxer_email, day, contribiution) ]
+csv_array_daily = [ %w(channel_id, woloxer_email, day, contribiution, woloxer_amount_of_messages, total_amount_of_messages) ]
+csv_array_monthly = [ %w(channel_id, woloxer_email, day, contribiution, woloxer_amount_of_messages, total_amount_of_messages) ]
 
 # generate CSV array
 amounts_of_messages_per_channel_and_woloxer.each do |channel, woloxer_data|
@@ -39,14 +39,20 @@ amounts_of_messages_per_channel_and_woloxer.each do |channel, woloxer_data|
     daily_total_in_channel = daily_data.fetch(:total)
     daily_data.each do |woloxer, amount_of_slacks|
       next if woloxer == :total
-      csv_array_daily << [channel, woloxer, day, "#{amount_of_slacks.fdiv daily_total_in_channel}"]
+      csv_array_daily << [
+        channel, woloxer, day, "#{amount_of_slacks.fdiv daily_total_in_channel}",
+        amount_of_slacks, daily_data[:total]
+      ]
     end
   end
   woloxer_data[:monthly].each do |month, monthly_data|
     monthly_total_in_channel = monthly_data.fetch(:total)
     monthly_data.each do |woloxer, amount_of_slacks|
       next if woloxer == :total
-      csv_array_monthly << [channel, woloxer, month, "#{amount_of_slacks.fdiv monthly_total_in_channel}"]
+      csv_array_monthly << [
+        channel, woloxer, month, "#{amount_of_slacks.fdiv monthly_total_in_channel}",
+        amount_of_slacks, monthly_data[:total]
+      ]
     end
   end
 end
