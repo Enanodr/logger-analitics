@@ -14,7 +14,7 @@ channels = Dir.glob('./slacks/*').map { |dir|  dir.split('/').last }
 #                       "time": seconds,
 #                       "month": "YYYY-MM",
 #                       "day": "YYYY-MM-DD",
-# =>                    "words_quantity": quantity of words in message
+#                       "words_quantity": quantity of words in message
 #                     }, ...],
 #     "WOLOXER_ID" => ...,
 # }
