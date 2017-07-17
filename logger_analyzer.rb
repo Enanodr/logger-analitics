@@ -10,9 +10,11 @@ channels = Dir.glob('./slacks/*').map { |dir|  dir.split('/').last }
 # {
 #   "CHANNEL_ID" => {
 #     "WOLOXER_ID" => [{
-#                       "text": context of message,
+#                       "raw_text": context of message,
 #                       "time": seconds,
-#                       "month": "YYYY-MM"
+#                       "month": "YYYY-MM",
+#                       "day": "YYYY-MM-DD",
+#                       "words_quantity": quantity of words in message
 #                     }, ...],
 #     "WOLOXER_ID" => ...,
 # }
@@ -37,9 +39,11 @@ channels.each do |channel|
   slacks_by_channel[channel]['slacks'].each do |slack|
     next if slack['subtype']
     slacks_by_woloxer[slack['user']] << {
-      'text' => slack['text'],
+      'raw_text' => slack['text'],
+      'words_quantity' => slack['text'].split.size,
       'time' => slack['ts'],
-      'month' => DateTime.strptime(slack['ts'],'%s').strftime('%Y-%m')
+      'month' => DateTime.strptime(slack['ts'],'%s').strftime('%Y-%m'),
+      'day' => DateTime.strptime(slack['ts'],'%s').strftime('%Y-%m-%d'),
     }
   end
   slacks_by_channel[channel] = slacks_by_woloxer
@@ -75,17 +79,17 @@ end
 
 #slacks_by_channel_by_woloxer
 # CSV Headers
-csv_array = [['woloxer_id', 'channel_id', 'month', 'timestamp', 'message']]
+csv_array = [['woloxer_id', 'channel_id', 'month', 'day', 'timestamp', 'raw_message', 'words_quantity']]
 # generate CSV array
 slacks_by_channel.each do |channel_id, data|
   data.each do |user_id, slacks|
     slacks.each do |slack|
-      csv_array << [user_id, channel_id, slack['month'], slack['time'], slack['text']]
+      csv_array << [user_id, channel_id, slack['month'], slack['day'], slack['time'], slack['raw_text'], slack['words_quantity']]
     end
   end
 end
 # Save CSV File
-CSV.open("slacks_by_channel_by_woloxer.csv", "w") { |csv| csv_array.each { |line| csv << line } }
+CSV.open("slacks_by_channel_by_slack_id.csv", "w") { |csv| csv_array.each { |line| csv << line } }
 
 
 
