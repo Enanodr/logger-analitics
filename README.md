@@ -15,4 +15,9 @@ You'll get a `all_woloxers_with_monthly_sentiment.csv` file.
 ### Chats per period
 
 1. Having run the basic steps, run `ruby chatiest_time_per_woloxer.rb`.
-You'll get a `amount_of_chats_per_period_and_woloxer.csv.csv` file.
+You'll get a `amount_of_chats_per_period_and_woloxer.csv` file.
+
+### Contribiution to channel by woloxer
+
+1. Having run the basic steps, run `ruby contribution_of_each_woloxer_to_each_channel.rb`.
+You'll get 2 files: `daily_contribiution_per_woloxer_per_channel.csv` and `monthly_contribiution_per_woloxer_per_channel.csv` .
