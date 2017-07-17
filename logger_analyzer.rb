@@ -73,7 +73,7 @@ end
 #   end
 #   slacks_by_channel.each do |_, data|
 #     next unless data[woloxer]
-#     data[woloxer].each { |slack| woloxers_slacks_by_month[woloxer][slack['month']] << slack['text'] }
+#     data[woloxer].each { |slack| woloxers_slacks_by_month[woloxer][slack['month']] << slack['raw_text'] }
 #   end
 # end
 
