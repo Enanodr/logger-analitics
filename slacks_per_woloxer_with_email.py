@@ -14,9 +14,9 @@ with open("emails_by_slack_id.csv", 'r') as arch:
 
 with open("slacks_by_channel_by_slack_id.csv", 'r') as arch, open("slacks_by_channel_by_woloxer_email.csv", 'w') as final_arch:
     arch_csv = DictReader(arch)
-    csv_writer = DictWriter(final_arch, fieldnames=["email"] + arch_csv.fieldnames[1:])
+    csv_writer = DictWriter(final_arch, fieldnames=["slack_id", "email"] + arch_csv.fieldnames[1:])
     csv_writer.writeheader()
     for line in arch_csv:
         line["email"] = emails_by_slack_id[line["woloxer_id"]]
-        line.pop("woloxer_id")
+        line["slack_id"] = line.pop("woloxer_id")
         csv_writer.writerow(line)
