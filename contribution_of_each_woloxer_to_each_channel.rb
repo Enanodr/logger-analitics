@@ -12,46 +12,74 @@ CSV.foreach('slacks_by_channel_by_woloxer_email.csv', headers: true, header_conv
   woloxer = row[:email]
   day = row[:day]
   month = row[:month]
+  text = row[:raw_message] || ''
+  # puts "Channel: #{channel}, Woloxer: #{woloxer}, dat: #{day}, text: #{row[:raw_message]}"
+  amount_of_words = text.split(' ').map { |t| t.split(',') }.flatten.count
 
-  amounts_of_messages_per_channel_and_woloxer[channel] = amounts_of_messages_per_channel_and_woloxer.fetch(channel, { daily: {}, monthly: {} })
-  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day] = amounts_of_messages_per_channel_and_woloxer[channel][:daily].fetch(day, { })
-  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][woloxer] = amounts_of_messages_per_channel_and_woloxer[channel][:daily][day].fetch(woloxer, 0)
-  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][woloxer] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel] =
+    amounts_of_messages_per_channel_and_woloxer.fetch(channel, { daily: {}, monthly: {} })
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:daily].fetch(day, { })
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][woloxer] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:daily][day].fetch(woloxer, { slacks: 0, words: 0 })
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][woloxer][:slacks] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][woloxer][:words] += amount_of_words
 
-  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total] = amounts_of_messages_per_channel_and_woloxer[channel][:daily][day].fetch(:total, 0)
-  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total_slacks] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:daily][day].fetch(:total_slacks, 0)
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total_slacks] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total_words] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:daily][day].fetch(:total_words, 0)
+  amounts_of_messages_per_channel_and_woloxer[channel][:daily][day][:total_words] += amount_of_words
 
-  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month] = amounts_of_messages_per_channel_and_woloxer[channel][:monthly].fetch(month, { })
-  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][woloxer] = amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month].fetch(woloxer, 0)
-  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][woloxer] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:monthly].fetch(month, { })
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][woloxer] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month].fetch(woloxer, { slacks: 0, words: 0 })
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][woloxer][:slacks] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][woloxer][:words] += amount_of_words
 
-  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total] = amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month].fetch(:total, 0)
-  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total_slacks] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month].fetch(:total_slacks, 0)
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total_slacks] += 1
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total_words] =
+    amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month].fetch(:total_words, 0)
+  amounts_of_messages_per_channel_and_woloxer[channel][:monthly][month][:total_words] += amount_of_words
 end
 
 # CSV Headers
-csv_array_daily = [ %w(channel_id, woloxer_email, day, contribiution, woloxer_amount_of_messages, total_amount_of_messages) ]
-csv_array_monthly = [ %w(channel_id, woloxer_email, day, contribiution, woloxer_amount_of_messages, total_amount_of_messages) ]
+csv_array_daily = [
+  %w(channel_id, woloxer_email, day, message_contribiution, words_contribiution,
+     woloxer_amount_of_messages, total_amount_of_messages, amount_of_words, total_amount_of_words)
+]
+csv_array_monthly = [
+  %w(channel_id, woloxer_email, month, message_contribiution, words_contribiution,
+     woloxer_amount_of_messages, total_amount_of_messages, amount_of_words, total_amount_of_words)
+]
 
 # generate CSV array
 amounts_of_messages_per_channel_and_woloxer.each do |channel, woloxer_data|
   woloxer_data[:daily].each do |day, daily_data|
-    daily_total_in_channel = daily_data.fetch(:total)
-    daily_data.each do |woloxer, amount_of_slacks|
-      next if woloxer == :total
+    daily_total_slacks_in_channel = daily_data.fetch(:total_slacks)
+    daily_total_words_in_channel = daily_data.fetch(:total_words)
+    daily_data.each do |woloxer, counts|
+      next if [:total_slacks, :total_words].include? woloxer
       csv_array_daily << [
-        channel, woloxer, day, "#{amount_of_slacks.fdiv daily_total_in_channel}",
-        amount_of_slacks, daily_data[:total]
+        channel, woloxer, day, "#{counts[:slacks].fdiv daily_total_slacks_in_channel}",
+        "#{counts[:words].fdiv daily_total_words_in_channel}", counts[:slacks],
+        daily_total_slacks_in_channel, counts[:words], daily_total_words_in_channel
       ]
     end
   end
   woloxer_data[:monthly].each do |month, monthly_data|
-    monthly_total_in_channel = monthly_data.fetch(:total)
-    monthly_data.each do |woloxer, amount_of_slacks|
-      next if woloxer == :total
+    monthly_total_slacks_in_channel = monthly_data.fetch(:total_slacks)
+    monthly_total_words_in_channel = monthly_data.fetch(:total_words)
+    monthly_data.each do |woloxer, counts|
+      next if [:total_slacks, :total_words].include? woloxer
       csv_array_monthly << [
-        channel, woloxer, month, "#{amount_of_slacks.fdiv monthly_total_in_channel}",
-        amount_of_slacks, monthly_data[:total]
+        channel, woloxer, month, "#{counts[:slacks].fdiv monthly_total_slacks_in_channel}",
+        "#{counts[:words].fdiv monthly_total_words_in_channel}", counts[:slacks],
+        monthly_total_slacks_in_channel, counts[:words], monthly_total_words_in_channel
       ]
     end
   end
